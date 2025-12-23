@@ -9,7 +9,7 @@ import java.util.Locale;
 
 public class DateUtil {
 
-    public static LocalDate parseFromAriaLabel(WebElement day) {
+    public static LocalDate getDateFromDayElement(WebElement day) {
         // remove "Choose "
         String aria = day.getAttribute("aria-label")
                 .replace("Choose ", "")

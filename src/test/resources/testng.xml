@@ -4,10 +4,9 @@
     <listeners>
         <listener class-name="listeners.TestListener" />
     </listeners>
-    <test name="Register Test" parallel="classes" thread-count="2">
+    <test name="Book Tour Test" parallel="classes" thread-count="2">
         <classes>
-            <class name="testcases.register.TC01_RegisterTest" />
-            <class name="testcases.login.TC02_LoginTest" />
+            <class name="testcases.booktour.TC_CreateBooking" />
         </classes>
     </test>
 </suite>

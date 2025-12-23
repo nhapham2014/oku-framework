@@ -2,12 +2,15 @@ package components;
 
 import base.BasePage;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class TopBarNavigation extends BasePage {
 
     private By byLnkTours = By.xpath("//div[text()='Tours']");
-    private By byLnkNorthernJapan = By.xpath("//a[text()='Northern Japan']");
+    private By byLnkNorthernJapan = By.xpath("//a[@href='/region/northern-japan/']");
 
 
 
@@ -45,10 +48,19 @@ public class TopBarNavigation extends BasePage {
     public TopBarNavigation(WebDriver driver) {
         super(driver);
     }
+    public void clickTour(){
+        click(byLnkTours);
+    }
 
     public void navigateToNorthernJapan() {
-        click(byLnkTours);
-        click(byLnkNorthernJapan);
+        hover(byLnkTours);
+//        scrollToElement(byLnkNorthernJapan);
+//        clickbutton(byLnkNorthernJapan);
+        WebElement trip = wait.until(
+                ExpectedConditions.elementToBeClickable(byLnkNorthernJapan)
+        );
+        trip.click();
+
     }
     //About us section
     public void navigateToWhoWeAre() {

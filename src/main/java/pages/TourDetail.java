@@ -10,8 +10,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import static utils.DateUtil.daysFromNow;
-import static utils.DateUtil.parseFromAriaLabel;
+import static utils.DateUtil.*;
 
 public class TourDetail extends CommonPage{
     private By byBtnBookNow = By.id("CartOpen");
@@ -33,6 +32,7 @@ public class TourDetail extends CommonPage{
         super(driver);
     }
     public void clickBtnBookNow(){
+        scrollToElement(byBtnBookNow);
         click(byBtnBookNow);
     }
     public void goToNextMonth() {
@@ -62,20 +62,46 @@ public class TourDetail extends CommonPage{
 
             List<WebElement> validDays = days.stream()
                     .filter(d -> daysFromNow(
-                             parseFromAriaLabel(d)) >= 60)
+                            getDateFromDayElement(d)) >= 60)
                     .collect(Collectors.toList());
 
             if (!validDays.isEmpty()) {
                 WebElement chosen = validDays.get(
                         new Random().nextInt(validDays.size()));
                 chosen.click();
-                return parseFromAriaLabel(chosen);
+                return getDateFromDayElement(chosen);
             }
 
             goToNextMonth();
         }
 
         throw new RuntimeException("No start date >= 60 days found");
+    }
+    public LocalDate selectRandomStartDateLt60Days() {
+        LocalDate today = LocalDate.now();
+
+        for (int i = 0; i < 2; i++) { // chỉ scan tháng hiện tại + tháng sau
+            List<WebElement> days = getAvailableDaysInCurrentMonth();
+
+            List<WebElement> validDays = days.stream()
+                    .filter(d -> {
+                        long diff = ChronoUnit.DAYS.between(
+                                today, getDateFromDayElement(d));
+                        return diff > 0 && diff < 60;
+                    })
+                    .collect(Collectors.toList());
+
+            if (!validDays.isEmpty()) {
+                WebElement chosen = validDays.get(
+                        new Random().nextInt(validDays.size()));
+                chosen.click();
+                return getDateFromDayElement(chosen);
+            }
+
+            goToNextMonth();
+        }
+
+        throw new RuntimeException("No start date < 60 days found");
     }
 
 

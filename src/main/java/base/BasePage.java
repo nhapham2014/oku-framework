@@ -20,7 +20,7 @@ public class BasePage {
 
     public BasePage(WebDriver driver) {
         this.driver = driver;
-        wait = new WebDriverWait(driver, Duration.ofSeconds(300));
+        wait = new WebDriverWait(driver, Duration.ofSeconds(30));
         this.waitUtil = new WaitUtil(driver);
         this.scenarioContext = new ScenarioContext();
     }
@@ -75,9 +75,7 @@ public class BasePage {
         );
     }
 
-    public void scrollToElement(WebElement element) {
-        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", element);
-    }
+
 
     public int getOptionsCount(By locator) {
         List<WebElement> options = driver.findElements(locator);
@@ -109,5 +107,9 @@ public class BasePage {
     public void reloadPage() {
         driver.navigate().refresh();
     }
-
+    public void scrollToElement(By locator) {
+        WebElement element = driver.findElement(locator);
+        ((JavascriptExecutor) driver)
+                .executeScript("arguments[0].scrollIntoView({block:'center'});", element);
+    }
 }

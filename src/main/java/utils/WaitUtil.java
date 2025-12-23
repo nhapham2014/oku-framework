@@ -48,4 +48,5 @@ public class WaitUtil {
         LOG.info("waitForPresenceOfElementLocated: " + locator);
         return wait.until(ExpectedConditions.invisibilityOfElementLocated(locator));
     }
+
 }

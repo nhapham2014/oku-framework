@@ -13,6 +13,9 @@ public class CommonPage extends BasePage {
         System.out.println("CommonPage driver = " + driver);
         topBarNavigation = new TopBarNavigation(driver);
     }
+    public void clickTour(){
+        topBarNavigation.clickTour();
+    }
 
     public void navigateToNorthernJapan() {
         topBarNavigation.navigateToNorthernJapan();
