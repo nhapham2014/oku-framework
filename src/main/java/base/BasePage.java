@@ -20,7 +20,7 @@ public class BasePage {
 
     public BasePage(WebDriver driver) {
         this.driver = driver;
-        wait = new WebDriverWait(driver, Duration.ofSeconds(30));
+        wait = new WebDriverWait(driver, Duration.ofSeconds(50));
         this.waitUtil = new WaitUtil(driver);
         this.scenarioContext = new ScenarioContext();
     }
@@ -112,4 +112,11 @@ public class BasePage {
         ((JavascriptExecutor) driver)
                 .executeScript("arguments[0].scrollIntoView({block:'center'});", element);
     }
+    public void jsClick(WebElement el) {
+        ((JavascriptExecutor) driver)
+                .executeScript("arguments[0].scrollIntoView({block:'center'});", el);
+        ((JavascriptExecutor) driver)
+                .executeScript("arguments[0].click();", el);
+    }
+
 }

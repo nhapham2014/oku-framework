@@ -10,13 +10,25 @@ import java.util.Locale;
 public class DateUtil {
 
     public static LocalDate getDateFromDayElement(WebElement day) {
-        // remove "Choose "
-        String aria = day.getAttribute("aria-label")
-                .replace("Choose ", "")
-                .replaceAll("(st|nd|rd|th)", "");
+        // VD aria-label:
+        // "Choose Satuay, January 17th, 2026"
+
+        String aria = day.getAttribute("aria-label");
+
+        // 1. Bỏ "Choose "
+        aria = aria.replace("Choose ", "");
+
+        // 2. Bỏ hậu tố st/nd/rd/th
+        aria = aria.replaceAll("(st|nd|rd|th)", "");
+
+        // 3. Bỏ day-of-week (Satuay, / Saturday, ...)
+        aria = aria.replaceFirst("^[A-Za-z]+,\\s*", "");
+
+        // Kết quả còn lại:
+        // "January 17, 2026"
 
         DateTimeFormatter formatter =
-                DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy", Locale.ENGLISH);
+                DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.ENGLISH);
 
         return LocalDate.parse(aria, formatter);
     }

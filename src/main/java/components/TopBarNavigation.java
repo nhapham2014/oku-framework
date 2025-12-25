@@ -54,13 +54,7 @@ public class TopBarNavigation extends BasePage {
 
     public void navigateToNorthernJapan() {
         hover(byLnkTours);
-//        scrollToElement(byLnkNorthernJapan);
-//        clickbutton(byLnkNorthernJapan);
-        WebElement trip = wait.until(
-                ExpectedConditions.elementToBeClickable(byLnkNorthernJapan)
-        );
-        trip.click();
-
+        clickbutton(byLnkNorthernJapan);
     }
     //About us section
     public void navigateToWhoWeAre() {

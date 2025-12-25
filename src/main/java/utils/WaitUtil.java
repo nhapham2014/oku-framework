@@ -10,6 +10,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
+import java.util.List;
 
 public class WaitUtil {
     protected final Logger LOG = LogManager.getLogger(getClass());
@@ -47,6 +48,10 @@ public class WaitUtil {
     public Boolean waitForInvisibilityOfElementLocated(By locator) {
         LOG.info("waitForPresenceOfElementLocated: " + locator);
         return wait.until(ExpectedConditions.invisibilityOfElementLocated(locator));
+    }
+    public List<WebElement> waitForPresenceOfAllElementLocated(By locator) {
+        LOG.info("waitForPresenceOfElementLocated: " + locator);
+        return wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(locator));
     }
 
 }

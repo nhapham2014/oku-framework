@@ -14,12 +14,12 @@ public class TC_CreateBooking extends BaseTest {
     @Test
     public void createbooking(){
         homePage= new HomePage(driver);
-        tourDetail = new TourDetail(driver);
-        tour = new Tour(driver);
-        //homePage.clickTour();
         homePage.navigateToNorthernJapan();
+        tour = new Tour(driver);
         tour.clickViewDetailTourButton("/trips/trip-to-nago/");
-        tourDetail.clickBtnBookNow();
-//        tourDetail.selectRandomStartDateLt60Days();
+        tourDetail=new TourDetail(driver);
+       tourDetail.clickBtnBookNow();
+       tourDetail.selectRandomStartDateLt60Days();
+       tourDetail.clickContinueBook();
     }
 }
