@@ -107,16 +107,30 @@ public class BasePage {
     public void reloadPage() {
         driver.navigate().refresh();
     }
-    public void scrollToElement(By locator) {
-        WebElement element = driver.findElement(locator);
+    public void scrollToElement(WebElement element) {
         ((JavascriptExecutor) driver)
                 .executeScript("arguments[0].scrollIntoView({block:'center'});", element);
     }
+
     public void jsClick(WebElement el) {
         ((JavascriptExecutor) driver)
                 .executeScript("arguments[0].scrollIntoView({block:'center'});", el);
         ((JavascriptExecutor) driver)
                 .executeScript("arguments[0].click();", el);
+    }
+    public void setSelectValueByJs(By locator, String value) {
+        WebElement el = wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+        ((JavascriptExecutor) driver).executeScript(
+                "arguments[0].value = arguments[1]; arguments[0].dispatchEvent(new Event('change'));",
+                el, value);
+    }
+    public String setMuiSelectValue(By selectLocator, String value) {
+        WebElement el = wait.until(ExpectedConditions.presenceOfElementLocated(selectLocator));
+        ((JavascriptExecutor) driver).executeScript(
+                "arguments[0].value = arguments[1]; arguments[0].dispatchEvent(new Event('change'));",
+                el, value
+        );
+        return el.getAttribute("value");
     }
 
 }

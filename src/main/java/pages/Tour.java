@@ -14,7 +14,7 @@ public class Tour extends CommonPage {
     public void clickViewDetailTourButton(String tourLink) {
         By byBtnViewDetail = By.xpath("//a[@href='" + tourLink + "']//button");
         waitUtil.waitForPresenceOfElementLocated(byBtnViewDetail);
-        scrollToElement(byBtnViewDetail);
+        scrollToElement(driver.findElement(byBtnViewDetail));
         click(byBtnViewDetail);
     }
 }

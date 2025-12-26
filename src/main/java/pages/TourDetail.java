@@ -1,9 +1,6 @@
 package pages;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
@@ -28,29 +25,109 @@ public class TourDetail extends CommonPage{
                     ":not(.react-datepicker__day--disabled)" +
                     ":not(.react-datepicker__day--outside-month)"
     );
+    private By byCalendar = By.xpath("//div[@class='react-datepicker']");
+    private By byCurrentMonth = By.xpath("//div[@class='react-datepicker__current-month']");
     private By byBtnNextMonth = By.xpath("//div[@class='react-datepicker']//button[@aria-label='Next Month']");
     // icon previous month
     private By byBtnPreMonth = By.xpath("//button[@aria-label='Previous Month']");
     private By byBtnContinueBook = By.id("CheckoutInitiate");
     private By byBtnAsk = By.xpath("//div[button[@id='CheckoutInitiate']]//a[@id='EnquiryTourPage1']");
+    private By byListRadio = By.xpath("//div[@role='radiogroup']");
+    private By byTravellerSelectWrapper = By.xpath("//select[@id='demo-customized-select']/parent::div");
 
 
     public TourDetail(WebDriver driver) {
         super(driver);
     }
     public void clickBtnBookNow(){
-        waitUtil.waitForPresenceOfElementLocated(byBtnBookNow);
-        scrollToElement(byBtnBookNow);
+        WebElement btnBook = waitUtil.waitForPresenceOfElementLocated(byBtnBookNow);
+        scrollToElement(btnBook);
         click(byBtnBookNow);
     }
+    public void openDatePicker() {
+
+        WebElement input = wait.until(
+                ExpectedConditions.elementToBeClickable(byCalendar)
+        );
+
+        jsClick(input);
+
+        wait.until(
+                ExpectedConditions.presenceOfElementLocated(
+                        By.cssSelector(".react-datepicker")
+                )
+        );
+    }
+
     public void goToNextMonth() {
-        wait.until(ExpectedConditions.presenceOfElementLocated(byBtnNextMonth));
-        WebElement nextBtn = driver.findElement(byBtnNextMonth);
+        wait.until(
+                ExpectedConditions.presenceOfElementLocated(
+                        By.cssSelector(".react-datepicker")
+                )
+        );
+
+        String currentMonthText = wait.until(
+                ExpectedConditions.presenceOfElementLocated(
+                        By.cssSelector(".react-datepicker__current-month")
+                )
+        ).getText();
+
+        WebElement nextBtn = wait.until(
+                ExpectedConditions.elementToBeClickable(byBtnNextMonth)
+        );
+
         jsClick(nextBtn);
 
-        // đợi ngày mới render
-        wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(byValidDay));
+        // đợi month đổi
+        wait.until(d -> {
+            try {
+                return !d.findElement(
+                        By.cssSelector(".react-datepicker__current-month")
+                ).getText().equals(currentMonthText);
+            } catch (Exception e) {
+                return false;
+            }
+        });
+
+        wait.until(
+                ExpectedConditions.presenceOfAllElementsLocatedBy(byValidDay)
+        );
     }
+    public void clickNextMonth(int times) {
+
+        // đảm bảo datepicker đang mở
+        wait.until(ExpectedConditions.presenceOfElementLocated(byCalendar));
+
+        for (int i = 0; i < times; i++) {
+
+            WebElement monthEl = wait.until(
+                    ExpectedConditions.presenceOfElementLocated(byCurrentMonth)
+            );
+
+            String currentMonthText = monthEl.getText();
+
+            WebElement nextBtn = wait.until(
+                    ExpectedConditions.presenceOfElementLocated(byBtnNextMonth)
+            );
+
+            jsClick(nextBtn);
+
+            // đợi tháng đổi (React re-render)
+            wait.until(driver -> {
+                try {
+                    String newMonth =
+                            driver.findElement(byCurrentMonth).getText();
+                    return !newMonth.equals(currentMonthText);
+                } catch (StaleElementReferenceException e) {
+                    return false;
+                }
+            });
+
+            // đợi ngày render xong
+            wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(byValidDay));
+        }
+    }
+
 
     private List<WebElement> getAvailableDaysInCurrentMonth() {
         return driver.findElements(By.cssSelector(".react-datepicker__day"))
@@ -64,23 +141,32 @@ public class TourDetail extends CommonPage{
     }
     public LocalDate selectRandomStartDateGte60Days() {
         LocalDate today = LocalDate.now();
+        Random random = new Random();
 
-        // Nhảy ít nhất 2 tháng để đảm bảo >= 60
-        goToNextMonth();
-        goToNextMonth();
+        // nhảy tối thiểu 2 tháng
+        clickNextMonth(3);
 
-        for (int i = 0; i < 6; i++) { // max scan 6 tháng
-            List<WebElement> days = getAvailableDaysInCurrentMonth();
+        for (int i = 0; i < 6; i++) {
+
+            List<WebElement> days = wait.until(
+                    ExpectedConditions.presenceOfAllElementsLocatedBy(byValidDay)
+            );
 
             List<WebElement> validDays = days.stream()
-                    .filter(d -> daysFromNow(
-                            getDateFromDayElement(d)) >= 60)
-                    .collect(Collectors.toList());
+                    .filter(d -> {
+                        try {
+                            return daysFromNow(getDateFromDayElement(d)) >= 60;
+                        } catch (Exception e) {
+                            return false;
+                        }
+                    })
+                    .toList();
 
             if (!validDays.isEmpty()) {
                 WebElement chosen = validDays.get(
-                        new Random().nextInt(validDays.size()));
-                chosen.click();
+                        random.nextInt(validDays.size())
+                );
+                jsClick(chosen);
                 return getDateFromDayElement(chosen);
             }
 
@@ -125,10 +211,120 @@ public class TourDetail extends CommonPage{
     public void clickContinueBook(){
         waitUtil.waitForPresenceOfElementLocated(byBtnContinueBook);
 
-        scrollToElement(byBtnContinueBook);
+        scrollToElement(driver.findElement(byBtnContinueBook));
 
         jsClick(driver.findElement(byBtnContinueBook));
     }
+
+    public void waitForSingleSupplementToAppear(int travellers) {
+
+        if (travellers <= 1 || travellers % 2 == 0) {
+            return; // không cần radio
+        }
+
+        wait.until(driver ->
+                !driver.findElements(byListRadio).isEmpty()
+        );
+
+    }
+
+
+    public void selectSingleSupplement(String opt, int travellers) {
+
+        if (travellers <= 1 || travellers % 2 == 0) {
+            System.out.println("Single supplement not applicable");
+            return;
+        }
+
+        waitForSingleSupplementToAppear(travellers);
+
+        By byLabel = By.xpath(
+                "//input[@name='selectSingle' and @value='" +
+                        (opt.equalsIgnoreCase("Yes") ? "true" : "false") +
+                        "']/ancestor::label"
+        );
+
+        WebElement label = wait.until(
+                ExpectedConditions.presenceOfElementLocated(byLabel)
+        );
+
+        scrollToElement(label);
+        jsClick(label);
+    }
+
+
+    public String selectNumberOfTravellers2(String number) {
+
+        WebElement select = wait.until(
+                ExpectedConditions.presenceOfElementLocated(
+                        By.id("demo-customized-select")
+                )
+        );
+
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+
+        js.executeScript("""
+        const select = arguments[0];
+        const value = arguments[1];
+
+        select.value = value;
+        select.dispatchEvent(new Event('input', { bubbles: true }));
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        select.dispatchEvent(new Event('blur', { bubbles: true }));
+    """, select, number);
+
+        // ✅ đợi state React cập nhật xong
+        wait.until(d ->
+                number.equals(select.getAttribute("value"))
+        );
+
+        // ✅ return giá trị thực tế đang được chọn
+        return select.getAttribute("value");
+    }
+    public void waitForRadioGroupIfNeeded(int traveller) {
+
+        By radioGroup = By.cssSelector("div[role='radiogroup']");
+
+        if (traveller > 1 && traveller % 2 == 1) {
+            // ✅ radio PHẢI xuất hiện
+            wait.until(ExpectedConditions.presenceOfElementLocated(radioGroup));
+        } else {
+            // ✅ radio KHÔNG tồn tại trong DOM
+            wait.until(ExpectedConditions.numberOfElementsToBe(radioGroup, 0));
+        }
+    }
+    public void bookTourWithNoRoomOptionAndNoDeposit(String number){
+        clickBtnBookNow();
+        selectNumberOfTravellers2(number);
+        selectRandomStartDateLt60Days();
+        clickContinueBook();
+    }
+    public void bookTourWithNoRoomOptionAndHasDeposit(String number){
+        clickBtnBookNow();
+        selectNumberOfTravellers2(number);
+        selectRandomStartDateGte60Days();
+        clickContinueBook();
+    }
+    public void bookTourWithHasRoomOptAndNoDeposit(String number, String singleSuppliment){
+        clickBtnBookNow();
+        selectNumberOfTravellers2(number);
+        waitForRadioGroupIfNeeded(Integer.parseInt(number));
+        selectRandomStartDateLt60Days();
+        selectSingleSupplement(singleSuppliment, Integer.parseInt(number));
+        clickContinueBook();
+    }
+    public void bookTourWithHasRoomOptAndHasDeposit(String number, String singleSuppliment){
+        clickBtnBookNow();
+        selectNumberOfTravellers2(number);
+        waitForRadioGroupIfNeeded(Integer.parseInt(number));
+        selectRandomStartDateGte60Days();
+        selectSingleSupplement(singleSuppliment, Integer.parseInt(number));
+        clickContinueBook();
+    }
+
+
+
+
 
 
 

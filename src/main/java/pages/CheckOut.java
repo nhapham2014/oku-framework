@@ -44,6 +44,15 @@ public class CheckOut extends CommonPage {
     private By byTxtNote = By.xpath("//textarea[@name='note']");
 
 
+    //Your details
+    public void inputFirstName(String fName){
+        sendKeys(byTxtFname,fName);
+    }
+    public void inputLastName(String fName){
+        sendKeys(byTxtLname,fName);
+    }
+
+
 
 
 
